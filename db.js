@@ -5,7 +5,7 @@ var connection = mysql.createConnection({
     port     : process.env.DatabaseAwsSqlPort,
     user     : process.env.DatabaseAwsSqlUser,
     password : process.env.DatabaseAwsSqlPassword,
-    database : "StockData"
+    database : "StockData",
 })
 
 connection.connect(function(err) {
