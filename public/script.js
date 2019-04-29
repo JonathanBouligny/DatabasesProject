@@ -1,6 +1,93 @@
-function drawChart() {
+//call crap to get data
 
-    d3.csv("FTSE.csv").then(function(prices) {
+
+
+const getTicker = async() => {
+    await fetch('http://localhost:3000/getCompanyInfo/AAPL').then(response => {
+        response.json().then(data => ({
+            data:data,
+            status:response.status
+        })
+    ).then(res => {
+        console.log(res.status,res.data)
+        })
+    })
+};
+const getCeo = async() => {
+    await fetch('http://localhost:3000/getAllCeos').then(response => {
+        response.json().then(data => ({
+                data:data,
+                status:response.status
+            })
+        ).then(res => {
+            console.log(res.status,res.data)
+        })
+    })
+};
+const getSectors = async() => {
+    await fetch('http://localhost:3000/getAllSectors').then(response => {
+        response.json().then(data => ({
+                data:data,
+                status:response.status
+            })
+        ).then(res => {
+            console.log(res.status,res.data)
+        })
+    })
+};
+const getSectorCeoSalarySum = async() => {
+    await fetch('http://localhost:3000/getSectorCeoSalarySum').then(response => {
+        response.json().then(data => ({
+                data:data,
+                status:response.status
+            })
+        ).then(res => {
+            console.log(res.status,res.data)
+        })
+    })
+};
+const getCompanies = async() => {
+    await fetch('http://localhost:3000/getCompanies').then(response => {
+        response.json().then(data => ({
+                data:data,
+                status:response.status
+            })
+        ).then(res => {
+            console.log(res.status,res.data)
+        })
+    })
+};
+
+const getPriceData = async() => {
+    await fetch('http://localhost:3000/getPriceData/AAPL').then(response => {
+        response.json().then(data => ({
+                data:data,
+                status:response.status
+            })
+        ).then(res => {
+            console.log(res.status,res.data)
+
+        })
+
+    })
+};
+ //getTicker();
+ //getCeo();
+ //getSectors();
+ //getSectorCeoSalarySum();
+ getCompanies();
+
+
+
+function drawChart(input) {
+    //d3.csv("FTSE.csv").then(function(prices) {
+
+
+
+
+    d3.json('http://localhost:3000/getPriceData/'+ input).then(function(prices) {
+
+
 
         const months = {0 : 'Jan', 1 : 'Feb', 2 : 'Mar', 3 : 'Apr', 4 : 'May', 5 : 'Jun', 6 : 'Jul', 7 : 'Aug', 8 : 'Sep', 9 : 'Oct', 10 : 'Nov', 11 : 'Dec'}
 
@@ -203,4 +290,292 @@ function wrap(text, width) {
     });
 }
 
-drawChart();
+
+function drawBarChart(){
+    var svg = d3.select("#bar1"),
+        margin = {top: 20, right: 20, bottom: 30, left: 100},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom;
+
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.3),
+        y = d3.scaleLinear().rangeRound([height, 0]);
+
+    var g = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const div = d3
+        .select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0);
+
+    d3.json('http://localhost:3000/getSectorCeoSalarySum')
+        .then((data) => {
+            return data.map((d) => {
+                d.totalsectorsalaries = +d.totalsectorsalaries;
+
+                return d;
+            });
+        })
+        .then((data) => {
+            x.domain(data.map(function(d) { return d.sector; }));
+            y.domain([0, d3.max(data, function(d) { return d.totalsectorsalaries; })]);
+            console.log(data);
+            g.append("g")
+                .attr("class", "axis axis--x")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+            .selectAll("text")
+                .attr("transform", function(d){
+                    return "rotate(-10)"
+                });
+                //.style("text-anchor","start");
+
+            g.append("g")
+                .attr("class", "axis axis--y")
+                .call(d3.axisLeft(y).ticks(10))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("Total comp (USD)");
+
+            g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(d.sector); })
+                .attr("y", function(d) { return y(d.totalsectorsalaries); })
+                .attr("width", x.bandwidth())
+                .attr("height", function(d) { return height - y(d.totalsectorsalaries);
+                })
+                .style('cursor', 'pointer')
+                .on('mouseover', d => {
+                div
+                    .transition()
+                    .duration(200)
+                    .style('opacity', 0.9);
+                div
+                    .html((d.totalsectorsalaries) + '<br/>')
+                    .style('left', d3.event.pageX + 'px')
+                    .style('top', d3.event.pageY - 28 + 'px');
+            })
+                .on('mouseout', () => {
+                    div
+                        .transition()
+                        .duration(500)
+                        .style('opacity', 0);
+                });
+        })
+        .catch((error) => {
+            throw error;
+        });
+
+
+
+}
+
+
+function drawHighestCEOChart() {
+    var svg = d3.select("#bar2"),
+        margin = {top: 20, right: 50, bottom: 100, left: 100},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom;
+
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+        y = d3.scaleLinear().rangeRound([height, 0]);
+
+    var g = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const div = d3
+        .select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0);
+
+    d3.json('http://localhost:3000/getAllCeos')
+        .then((data) => {
+            return data.map((d) => {
+                d.salary = +d.salary;
+
+                return d;
+            });
+        })
+        .then((data) => {
+            x.domain(data.map(function (d) {
+                return d.ceo;
+            }));
+            y.domain([0, d3.max(data, function (d) {
+                return d.salary;
+            })]);
+            console.log(data);
+            g.append("g")
+                .attr("class", "axis axis--x")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", function (d) {
+                    return "rotate(-90)"
+                });
+            //.style("text-anchor","start");
+
+            g.append("g")
+                .attr("class", "axis axis--y")
+                .call(d3.axisLeft(y).ticks(10))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("Total comp (USD)");
+
+            g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function (d) {
+                    return x(d.ceo);
+                })
+                .attr("y", function (d) {
+                    return y(d.salary);
+                })
+                .attr("width", x.bandwidth())
+                .attr("height", function (d) {
+                    return height - y(d.salary);
+                })
+                .style('cursor', 'pointer')
+                .on('mouseover', d => {
+                    div
+                        .transition()
+                        .duration(200)
+                        .style('opacity', 0.9);
+                    div
+                        .html((d.salary) + '<br/>')
+                        .style('left', d3.event.pageX + 'px')
+                        .style('top', d3.event.pageY - 28 + 'px');
+                })
+                .on('mouseout', () => {
+                    div
+                        .transition()
+                        .duration(500)
+                        .style('opacity', 0);
+                });
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+function drawBiggestSector() {
+    var svg = d3.select("#bar3"),
+        margin = {top: 20, right: 50, bottom: 100, left: 105},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom;
+
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+        y = d3.scaleLinear().rangeRound([height, 0]);
+
+    var g = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const div = d3
+        .select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0);
+
+    d3.json('http://localhost:3000/getAllSectors')
+        .then((data) => {
+            return data.map((d) => {
+                d.size = +d.size;
+
+                return d;
+            });
+        })
+        .then((data) => {
+            x.domain(data.map(function (d) {
+                return d.name;
+            }));
+            y.domain([0, d3.max(data, function (d) {
+                return d.size;
+            })]);
+            console.log(data);
+            g.append("g")
+                .attr("class", "axis axis--x")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", function (d) {
+                    return "rotate(-10)"
+                });
+            //.style("text-anchor","start");
+
+            g.append("g")
+                .attr("class", "axis axis--y")
+                .call(d3.axisLeft(y).ticks(10))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("Total comp (USD)");
+
+            g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function (d) {
+                    return x(d.name);
+                })
+                .attr("y", function (d) {
+                    return y(d.size);
+                })
+                .attr("width", x.bandwidth())
+                .attr("height", function (d) {
+                    return height - y(d.size);
+                })
+                .style('cursor', 'pointer')
+                .on('mouseover', d => {
+                    div
+                        .transition()
+                        .duration(200)
+                        .style('opacity', 0.9);
+                    div
+                        .html((d.size) + '<br/>')
+                        .style('left', d3.event.pageX + 'px')
+                        .style('top', d3.event.pageY - 28 + 'px');
+                })
+                .on('mouseout', () => {
+                    div
+                        .transition()
+                        .duration(500)
+                        .style('opacity', 0);
+                });
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+
+window.onload=function(){
+
+    drawChart('AAPL');
+    drawBarChart();
+    drawHighestCEOChart();
+    drawBiggestSector();
+};
+//this works....crudely lol
+d3.select('#company')
+    .on("change",function(){
+        d3.selectAll("svg > *").remove();
+
+        var sect = document.getElementById("company");
+        var section = sect.options[sect.selectedIndex].value;
+        drawChart(section);
+        drawBarChart();
+        drawHighestCEOChart();
+        drawBiggestSector();
+    });
