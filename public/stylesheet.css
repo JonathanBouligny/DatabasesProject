@@ -84,7 +84,12 @@ body {
 .axis--x path {
     display: none;
 }
-
+.bar1{
+    float:left;
+}
+.bar2{
+    float:right;
+}
 div.tooltip {
     color: white;
     position: absolute;

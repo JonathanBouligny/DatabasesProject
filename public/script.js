@@ -10,6 +10,7 @@ const getTicker = async() => {
         })
     ).then(res => {
         console.log(res.status,res.data)
+
         })
     })
 };
@@ -75,18 +76,12 @@ const getPriceData = async() => {
  //getCeo();
  //getSectors();
  //getSectorCeoSalarySum();
- getCompanies();
+ //getCompanies();
 
 
 
 function drawChart(input) {
-    //d3.csv("FTSE.csv").then(function(prices) {
-
-
-
-
     d3.json('http://localhost:3000/getPriceData/'+ input).then(function(prices) {
-
 
 
         const months = {0 : 'Jan', 1 : 'Feb', 2 : 'Mar', 3 : 'Apr', 4 : 'May', 5 : 'Jun', 6 : 'Jul', 7 : 'Aug', 8 : 'Sep', 9 : 'Oct', 10 : 'Nov', 11 : 'Dec'}
@@ -125,6 +120,15 @@ function drawChart(input) {
                 return hours + ':' + minutes + amPM + ' ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear()
             });
 
+        svg.append("text")
+            .attr("x", (w / 2))
+            .attr("y", 0 - (margin.top / 2) +3 )
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
+            .text("Candlestick for " + input);
+
+
         svg.append("rect")
             .attr("id","rect")
             .attr("width", w)
@@ -132,6 +136,9 @@ function drawChart(input) {
             .style("fill", "none")
             .style("pointer-events", "all")
             .attr("clip-path", "url(#clip)")
+            //added title down here
+
+
 
         var gX = svg.append("g")
             .attr("class", "axis x-axis") //Assign "axis" class
@@ -297,7 +304,7 @@ function drawBarChart(){
         width = +svg.attr("width") - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom;
 
-    var x = d3.scaleBand().rangeRound([0, width]).padding(0.3),
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
         y = d3.scaleLinear().rangeRound([height, 0]);
 
     var g = svg.append("g")
@@ -320,15 +327,17 @@ function drawBarChart(){
         .then((data) => {
             x.domain(data.map(function(d) { return d.sector; }));
             y.domain([0, d3.max(data, function(d) { return d.totalsectorsalaries; })]);
-            console.log(data);
+
             g.append("g")
                 .attr("class", "axis axis--x")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x))
-            .selectAll("text")
-                .attr("transform", function(d){
-                    return "rotate(-10)"
-                });
+                .selectAll(".tick text")
+                .call(wrap, x.bandwidth());
+           // .selectAll("text")
+             //   .attr("transform", function(d){
+               //     return "rotate(-10)"
+               // });
                 //.style("text-anchor","start");
 
             g.append("g")
@@ -340,6 +349,14 @@ function drawBarChart(){
                 .attr("dy", "0.71em")
                 .attr("text-anchor", "end")
                 .text("Total comp (USD)");
+
+            g.append("text")
+                .attr("x", (width / 2))
+                .attr("y", 0 - (margin.top / 2)+3)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Sector total CEO salaries");
 
             g.selectAll(".bar")
                 .data(data)
@@ -379,15 +396,16 @@ function drawBarChart(){
 
 function drawHighestCEOChart() {
     var svg = d3.select("#bar2"),
-        margin = {top: 20, right: 50, bottom: 100, left: 100},
+        margin = {top: 20, right: 50, bottom: 120, left: 100},
         width = +svg.attr("width") - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom;
 
-    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.3),
         y = d3.scaleLinear().rangeRound([height, 0]);
 
     var g = svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 
     const div = d3
         .select('body')
@@ -410,16 +428,22 @@ function drawHighestCEOChart() {
             y.domain([0, d3.max(data, function (d) {
                 return d.salary;
             })]);
-            console.log(data);
+
+
             g.append("g")
                 .attr("class", "axis axis--x")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x))
-                .selectAll("text")
-                .attr("transform", function (d) {
-                    return "rotate(-90)"
+                .selectAll(".tick text")
+                //.call(wrap, x.bandwidth())
+                //added below here
+
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", function(d) {
+                    return "rotate(-65)"
                 });
-            //.style("text-anchor","start");
 
             g.append("g")
                 .attr("class", "axis axis--y")
@@ -430,6 +454,14 @@ function drawHighestCEOChart() {
                 .attr("dy", "0.71em")
                 .attr("text-anchor", "end")
                 .text("Total comp (USD)");
+
+            g.append("text")
+                .attr("x", (width / 2))
+                .attr("y", 0 - (margin.top / 2)+3)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Top 50 CEO comp.");
 
             g.selectAll(".bar")
                 .data(data)
@@ -470,7 +502,7 @@ function drawHighestCEOChart() {
 
 function drawBiggestSector() {
     var svg = d3.select("#bar3"),
-        margin = {top: 20, right: 50, bottom: 100, left: 105},
+        margin = {top: 20, right: 20, bottom: 30, left: 100},
         width = +svg.attr("width") - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom;
 
@@ -501,15 +533,17 @@ function drawBiggestSector() {
             y.domain([0, d3.max(data, function (d) {
                 return d.size;
             })]);
-            console.log(data);
+
             g.append("g")
                 .attr("class", "axis axis--x")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x))
-                .selectAll("text")
-                .attr("transform", function (d) {
-                    return "rotate(-10)"
-                });
+                //.selectAll("text")
+                .selectAll(".tick text")
+                .call(wrap, x.bandwidth());
+               // .attr("transform", function (d) {
+               //     return "rotate(-10)"
+              //  });
             //.style("text-anchor","start");
 
             g.append("g")
@@ -520,7 +554,15 @@ function drawBiggestSector() {
                 .attr("y", 6)
                 .attr("dy", "0.71em")
                 .attr("text-anchor", "end")
-                .text("Total comp (USD)");
+                .text("Total size");
+
+            g.append("text")
+                .attr("x", (width / 2))
+                .attr("y", 0 - (margin.top / 2)+3)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .text("Top Sectors");
 
             g.selectAll(".bar")
                 .data(data)
@@ -559,13 +601,186 @@ function drawBiggestSector() {
         });
 }
 
+function drawData(input){
+var x=0;
+if (input == 'AAL'){
+    x=0;
+}
+    else if (input == 'AAPL'){
+        x=1;
+    }
 
+else if (input == 'ALK'){
+        x=2;
+    }
+
+else if (input =='AXP'){
+        x=3;
+    }
+else if (input == 'BA'){
+        x=4;
+    }
+else if (input == 'CAR'){
+        x=5;
+    }
+else if (input == 'CAT'){
+        x=6;
+    }
+else if (input == 'CHRW'){
+        x=7;
+    }
+else if (input == 'CSCO'){
+        x=8;
+    }
+else if (input == 'CSX'){
+        x=9;
+    }
+else if (input == 'CVX'){
+        x=10;
+    }
+else if (input == 'DAL'){
+        x=11;
+    }
+else if (input == 'DIS'){
+        x=12;
+    }
+else if (input == 'DOW'){
+        x=13;
+    }
+else if (input == 'EXPD'){
+        x=14;
+    }
+else if (input == 'FDX'){
+        x=15;
+    }
+else if (input == 'GS'){
+        x=16;
+    }
+else if (input == 'HD'){
+        x=17;
+    }
+else if (input == 'IBM'){
+        x=18;
+    }
+else if (input == 'INTC'){
+        x=19;
+    }
+else if (input == 'JBHT'){
+        x=20;
+    }
+else if (input == 'JBLU'){
+        x=21;
+    }
+else if (input == 'JNJ'){
+        x=22;
+    }
+else if (input == 'JPM'){
+        x=23;
+    }
+else if (input == 'KEX'){
+        x=24;
+    }
+else if (input == 'KO'){
+        x=25;
+    }
+else if (input == 'KSU'){
+        x=26;
+    }
+else if (input == 'LSTR'){
+        x=27;
+    }
+else if (input == 'LUV'){
+        x=28;
+    }
+else if (input == 'MATX'){
+        x=29;
+    }
+else if (input == 'MCD'){
+        x=30;
+    }
+else if (input == 'MMM'){
+        x=31;
+    }
+else if (input == 'MRK'){
+        x=32;
+    }
+else if (input == 'MSFT'){
+        x=33;
+    }
+else if (input == 'NKE'){
+        x=34;
+    }
+else if (input == 'NSC'){
+        x=35;
+    }
+else if (input == 'PFE'){
+        x=36;
+    }
+else if (input == 'PG'){
+        x=37;
+    }
+else if (input == 'R'){
+        x=38;
+    }
+else if (input == 'TRV'){
+        x=39;
+    }
+else if (input == 'UAL'){
+        x=40;
+    }
+else if (input == 'UNH'){
+        x=41;
+    }
+else if (input == 'UNP'){
+        x=42;
+    }
+else if (input == 'UPS'){
+        x=43;
+    }
+else if (input == 'UTX'){
+        x=44;
+    }
+else if (input == 'V'){
+        x=45;
+    }
+else if (input == 'VZ'){
+        x=46;
+    }
+else if (input == 'WBA'){
+        x=47;
+    }
+else if (input == 'WMT'){
+        x=48;
+    }
+else if (input == 'XOM'){
+        x=49;
+    }
+    else{x=0}
+
+
+
+    d3.json('http://localhost:3000/getCompanies')
+        .then(function(data){
+        //console.log(data);
+            //nameData = data.map(d=>d.name);
+            ceoData = data.map(d=>d.ceo);
+            empData = data.map(d=>d.employees);
+            sectorData = data.map(d=>d.sector);
+        //document.getElementById("myName").innerHTML = nameData[x];
+        document.getElementById("myCeo").innerHTML = ceoData[x];
+        document.getElementById("myEmp").innerHTML = empData[x];
+        document.getElementById("mySector").innerHTML = sectorData[x];
+    });
+
+};
 window.onload=function(){
 
     drawChart('AAPL');
+    drawData('AAPL');
     drawBarChart();
     drawHighestCEOChart();
     drawBiggestSector();
+
 };
 //this works....crudely lol
 d3.select('#company')
@@ -575,7 +790,9 @@ d3.select('#company')
         var sect = document.getElementById("company");
         var section = sect.options[sect.selectedIndex].value;
         drawChart(section);
+        drawData(section);
         drawBarChart();
         drawHighestCEOChart();
         drawBiggestSector();
+
     });

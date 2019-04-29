@@ -10,18 +10,72 @@
 <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 <body>
 <select id="company">
+    <option value='AAL'>American Airlines</option>
     <option value='AAPL' selected="selected">Apple</option>
+    <option value='ALK'>Alaska Air Group Inc</option>
+    <option value='AXP'>American Express</option>
+    <option value='BA'>Boeing</option>
+    <option value='CAR'>Avis Budget Group Inc</option>
+    <option value='CAT'>Caterpillar</option>
+    <option value='CHRW'>C.H. Robinson Worldwide Inc</option>
+    <option value='CSCO'>Cisco</option>
+    <option value='CSX'>CSX Corp</option>
+    <option value='CVX'>Chevron</option>
+    <option value='DAL'>Delta Air Lines</option>
+    <option value='DIS'>Disney</option>
+    <option value='DOW'>Dow Chemical</option>
+    <option value='EXPD'>Expeditors International of Washington Inc</option>
+    <option value='FDX'>FedEx</option>
+    <option value='GS'>Goldman Sachs</option>
+    <option value='HD'>Home Deopt</option>
+    <option value='IBM'>IBM</option>
+    <option value='INTC'>Intel</option>
+    <option value='JBHT'>J B Hunt Transport Services Inc</option>
+    <option value='JBLU'>JetBlue Airways Corp</option>
+    <option value='JNJ'>Johnson & Johnson</option>
+    <option value='JPM'>JP Morgan Chase</option>
+    <option value='KEX'>Kirby Corp</option>
+    <option value='KO'>Coca-Cola</option>
+    <option value='KSU'>Kansas City Southern</option>
+    <option value='LSTR'>Landstar System Inc</option>
+    <option value='LUV'>Southwest Airlines</option>
+    <option value='MATX'>Matson Inc</option>
+    <option value='MCD'>Mcdonalds Corp</option>
     <option value='MMM'>3M</option>
-    <option value="tomatoes">tomatoes</option>
+    <option value='MRK'>Merk</option>
+    <option value='MSFT'>Microsoft</option>
+    <option value='NKE'>Nike</option>
+    <option value='NSC'>Norfolk Southern</option>
+    <option value='PFE'>Pfizer</option>
+    <option value='PG'>Proctor & Gamble</option>
+    <option value='R'>Ryder System Inc</option>
+    <option value='TRV'>Travelers Companies Inc</option>
+    <option value='UAL'>United Continental Holdings</option>
+    <option value='UNH'>UnitedHealth</option>
+    <option value='UNP'>Union Pacific</option>
+    <option value='UPS'>UPS</option>
+    <option value='UTX'>United Technologies</option>
+    <option value='V'>Visa</option>
+    <option value='VZ'>Verizon</option>
+    <option value='WBA'>Walgreen</option>
+    <option value='WMT'>Wal-mart</option>
+    <option value='XOM'>Exxon Mobil</option>
 </select>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
+<p>Ceo: <span id="myCeo"></span></p>
+<p>Total Employees: <span id="myEmp"></span></p>
+<p>Sector:  <span id="mySector"></span></p>
 <script src="./script.js"></script>
-<svg id="container"></svg>
-<svg id="bar1" width="960" height="500"></svg>
-<svg id="bar2" width="960" height="500"></svg>
-<svg id="bar3" width="960" height="500"></svg>
+<svg id="container" style="display: block; margin:auto"></svg>
+
+<div style="width:1920px">
+<svg id="bar1" width="960" height="500" style="float:left;"></svg>
+<svg id="bar3" width="960" height="500" style="float:right;"></svg>
+</div>
+<svg id="bar2" width="1900" height="500"></svg>
+
 
 
 </body>
